@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import Logo from "./logo.svg";
 import styles from "./App.module.css";
 
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
+import { DocumentData, QuerySnapshot, getFirestore } from "firebase/firestore";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import firebase from "firebase/compat/app";
 import { serverTimestamp, Timestamp } from "firebase/firestore";
@@ -55,20 +55,24 @@ export function App() {
     }
   };
 
-  const handleLevelChange = (event: any) => {
-    const selectedLevels: any = Array.from(
+  const handleLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedLevels: string[] | any = Array.from(
       event.target.selectedOptions,
-      (option: any) => option.value
+      (option: HTMLOptionElement) => option.value
     );
-    setLevels(selectedLevels);
+    if (selectedLevels) {
+      setLevels(selectedLevels);
+    }
   };
 
   useEffect(() => {
-    getDocs(collection(db, "promotions")).then((querySnapshot: any) => {
-      querySnapshot.forEach((doc: any) => {
-        //  console.log(`${doc.id} => ${doc.data().title}`);
-      });
-    });
+    getDocs(collection(db, "promotions")).then(
+      (querySnapshot: QuerySnapshot<DocumentData>) => {
+        querySnapshot.forEach((doc) => {
+          //  console.log(`${doc.id} => ${doc.data().title}`);
+        });
+      }
+    );
   }, []);
 
   return (
