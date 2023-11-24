@@ -1,13 +1,15 @@
 import React, { ChangeEvent, useEffect, useState } from "react";
-import Logo from "./logo.svg";
+import Logo from "../../image/logo.svg";
 import styles from "./App.module.css";
 
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { DocumentData, QuerySnapshot, getFirestore } from "firebase/firestore";
-import { collection, getDocs, addDoc } from "firebase/firestore";
-import firebase from "firebase/compat/app";
-import { serverTimestamp, Timestamp } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import { useDispatch, useSelector } from "../../hooks/hooks";
+import {
+  getPromotions,
+  postPromotion,
+} from "../../services/actions/promotions";
+import { TPromotions } from "../../types/data";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD3gcQSHJ7XZRZL6761SdmXVeIahoTQOfU",
@@ -22,7 +24,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-// const analytics = getAnalytics(app);
 
 export function App() {
   const [title, setTitle] = useState("");
@@ -31,28 +32,50 @@ export function App() {
   const [dateEnd, setEnd] = useState("");
   const [link, setLink] = useState("");
   const [levels, setLevels] = useState([]); // Используем массив для хранения выбранных уровней
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // Состояние для уведомления
+  const dispatch = useDispatch();
+  const { showSuccessMessage, promotions } = useSelector(
+    (state) => state.promotion
+  );
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  const onSave = async () => {
-    console.log("start");
-    try {
-      const docRef = await addDoc(collection(db, "promotions"), {
+  const validateForm = () => {
+    return (
+      title !== "" &&
+      description !== "" &&
+      dateStart !== "" &&
+      dateEnd !== "" &&
+      link !== "" &&
+      levels.length > 0 &&
+      new Date(dateStart) <= new Date(dateEnd)
+    );
+  };
+
+  const onSave = () => {
+    if (!isFormValid) {
+      // Если форма не валидна, не отправляем данные
+      console.error("Form is not valid");
+      return;
+    }
+
+    dispatch(
+      postPromotion({
+        db,
         title,
         description,
-        isSite: true,
-        level: levels, // Используем состояние уровня
-        lang: "ru",
-        btnLink: "Записаться",
-        link: link,
-        end: Timestamp.fromDate(new Date(dateEnd)),
-        start: Timestamp.fromDate(new Date(dateStart)),
-      });
-      console.log("Document written successfully");
-      setShowSuccessMessage(true); // Показываем сообщение об успешном сохранении
-      setTimeout(() => setShowSuccessMessage(false), 3000); // Автоматически скрываем сообщение через 3 секунды
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+        levels,
+        link,
+        dateEnd,
+        dateStart,
+      })
+    );
+  };
+
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    validationFunction?: () => boolean
+  ) => {
+    setter(e.target.value);
   };
 
   const handleLevelChange = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -60,20 +83,22 @@ export function App() {
       event.target.selectedOptions,
       (option: HTMLOptionElement) => option.value
     );
-    if (selectedLevels) {
-      setLevels(selectedLevels);
-    }
+
+    setLevels(selectedLevels);
+    setIsFormValid(validateForm());
   };
 
   useEffect(() => {
-    getDocs(collection(db, "promotions")).then(
-      (querySnapshot: QuerySnapshot<DocumentData>) => {
-        querySnapshot.forEach((doc) => {
-          //  console.log(`${doc.id} => ${doc.data().title}`);
-        });
-      }
-    );
+    setIsFormValid(validateForm());
+  }, [title, description, dateStart, dateEnd, link, levels]);
+
+  useEffect(() => {
+    dispatch(getPromotions({ db }));
   }, []);
+
+  promotions.forEach((doc: TPromotions) =>
+    console.log(`${doc.id} => ${doc.title + " " + doc.description}`)
+  );
 
   return (
     <div className={styles.App}>
@@ -96,32 +121,47 @@ export function App() {
         placeholder="дата старта"
         // type={"date"}
         value={dateStart}
-        onChange={(e) => setStart(e.target.value)}
+        onChange={(e) => {
+          handleInputChange(e, setStart);
+          validateForm();
+        }}
       />
       <input
         type="date"
         placeholder="дата окончания"
         // type={"date"}
         value={dateEnd}
-        onChange={(e) => setEnd(e.target.value)}
+        onChange={(e) => {
+          handleInputChange(e, setEnd);
+          validateForm();
+        }}
       />
       <input
         type="text"
         placeholder="Название"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => {
+          handleInputChange(e, setTitle);
+          validateForm();
+        }}
       />
       <input
         type="text"
         placeholder="Ссылка"
         value={link}
-        onChange={(e) => setLink(e.target.value)}
+        onChange={(e) => {
+          handleInputChange(e, setLink);
+          validateForm();
+        }}
       />
       <input
         type="text"
         placeholder="Описание"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => {
+          handleInputChange(e, setDescription);
+          validateForm();
+        }}
       />
       <select multiple value={levels} onChange={handleLevelChange}>
         <option value="A1">A1</option>
@@ -130,7 +170,9 @@ export function App() {
         <option value="B2">B2</option>
         <option value="C1">C1</option>
       </select>
-      <button onClick={onSave}>SAVE</button>
+      <button onClick={onSave} disabled={!isFormValid}>
+        SAVE
+      </button>
       {showSuccessMessage && <div>Данные успешно сохранены!</div>}{" "}
       {/* Условный рендеринг уведомления */}
     </div>
