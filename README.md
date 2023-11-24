@@ -7,5 +7,6 @@ This is a description of my project.
 To run the React app:
 
 ```bash
-npm start
+1 --> npm install
+2 --> npm start
 ```
