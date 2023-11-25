@@ -4,6 +4,10 @@ export type TPromotions = {
   id: string;
   title: string;
   description: string;
+  start: string;
+  end: string;
+  link: string;
+  level: number;
 };
 
 export type TPromoState = {

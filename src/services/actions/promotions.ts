@@ -5,8 +5,13 @@ import {
   HIDE_SUCCESS_MESSAGE,
   POST_PROMOTIONS,
 } from "../constants";
-import { getPromotionsApi, postPromotionApi } from "../../api";
+import {
+  deletePromotionApi,
+  getPromotionsApi,
+  postPromotionApi,
+} from "../../api";
 import { TPostPromo, TPromotions } from "../../types/data";
+import { prettyTime } from "../../utils/prettytime";
 
 export interface IPostPromotionAction {
   readonly type: typeof POST_PROMOTIONS;
@@ -53,6 +58,10 @@ export const getPromotions = ({ db }: any) => {
             id: doc.id,
             title: doc.data().title,
             description: doc.data().description,
+            start: prettyTime(doc.data().start.seconds),
+            end: prettyTime(doc.data().end.seconds),
+            link: doc.data().link,
+            level: doc.data().level[doc.data().level.length - 1],
           });
         });
         dispatch({
@@ -61,5 +70,14 @@ export const getPromotions = ({ db }: any) => {
         });
       }
     );
+  };
+};
+
+export const deletePromotion = (data: any) => {
+  const { db } = data;
+  return function (dispatch: TAppDispatch) {
+    deletePromotionApi(data).then(() => {
+      dispatch(getPromotions({ db }));
+    });
   };
 };

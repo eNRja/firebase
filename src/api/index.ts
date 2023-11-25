@@ -4,6 +4,8 @@ import {
   Timestamp,
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   getDocs,
 } from "firebase/firestore";
 import { TPostPromo } from "../types/data";
@@ -31,4 +33,16 @@ export const postPromotionApi = async (data: TPostPromo) => {
 
 export const getPromotionsApi = ({ db }: any) => {
   return getDocs(collection(db, "promotions"));
+};
+
+export const deletePromotionApi = async (data: any) => {
+  const { db, id } = data;
+  console.log("start");
+  try {
+    const docRef = doc(db, "promotions", id);
+    await deleteDoc(docRef);
+    console.log("Document delete successfully");
+  } catch (e) {
+    console.error("Error deleting document: ", e);
+  }
 };

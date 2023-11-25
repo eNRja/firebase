@@ -60,4 +60,10 @@ module.exports = {
       template: path.join(__dirname, "public", "index.html"),
     }),
   ],
+  devServer: {
+    static: path.join(__dirname, 'src'),
+    compress: true,
+    port: 3000,
+    historyApiFallback: true, // Включает поддержку для клиентского роутинга
+  },
 };

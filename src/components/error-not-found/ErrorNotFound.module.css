@@ -1,10 +1,4 @@
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #ebebeb;
-}
-
-.App {
+.ErrorNotFound {
   display: flex;
   flex-direction: column;
   align-items: center;
