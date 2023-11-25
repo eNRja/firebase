@@ -1,0 +1,25 @@
+.Promotions {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  max-width: 80vw;
+  flex-wrap: wrap;
+}
+
+.Promotion {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  border: 1px solid #5579c2;
+  border-radius: 10px;
+  width: 190px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.PromotionDescription {
+  padding: 0 5px;
+}

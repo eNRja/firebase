@@ -1,0 +1,16 @@
+.Header {
+  background-color: #d6d6d6;
+  padding: 20px;
+  color: white;
+  text-align: center;
+  width: 100%;
+}
+
+.HeaderLogo {
+  height: 60px;
+}
+
+.HeaderLink {
+  color: #6a93e5;
+  margin: 0 5px;
+}
